@@ -16,14 +16,16 @@ Muestra de entrada los dos proyectos en vivo y redirige a cada sitio con una tra
 
 - `index.html`: contenido de la página.
 - `styles.css`: diseño y animaciones.
-- `main.js`: loader, fondo de partículas, efecto 3D de las tarjetas, transición al abrir un proyecto.
+- `main.js`: entrada del título, rayos del fondo, inclinación de las tarjetas, línea del proceso y transición al abrir un proyecto.
 - `assets/`: capturas de los proyectos.
 
-## Animaciones
+## Diseño
 
-Pantalla de carga, fondo de partículas interactivo, título que entra palabra por palabra, palabra rotativa con efecto
-scramble, tarjetas con borde de luz giratorio e inclinación 3D, pantallas de celular con scroll automático, chispas al
-tocar, marquesinas y botón flotante de WhatsApp. Se desactivan solas si el usuario tiene activado "reducir movimiento".
+Tipografía Geist / Geist Mono, fondo oscuro neutro con un único acento azul.
+
+Animaciones: entrada del título palabra por palabra, rayos de luz que recorren la cuadrícula del fondo, borde de luz en las
+tarjetas, inclinación sutil con el cursor, pantallas de celular con scroll automático, línea de proceso que se llena al hacer
+scroll y transición al abrir un proyecto. Se desactivan solas si el usuario tiene activado "reducir movimiento".
 
 ## Ejecutar en local
 
