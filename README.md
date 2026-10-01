@@ -33,12 +33,8 @@ py -m http.server 5510
 
 Y abrir http://localhost:5510.
 
-## Publicar
 
-Arrastrar la carpeta a https://app.netlify.com/drop, o conectar este repositorio en Netlify (sin comando de build,
-carpeta de publicación: la raíz).
 
 ## Contacto
 
-- WhatsApp: +57 312 697 5100
 - Instagram: [@rasec.dev](https://instagram.com/rasec.dev)
