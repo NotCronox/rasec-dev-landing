@@ -2,10 +2,12 @@
 
 Landing page / portafolio de Rasec Dev para el link de la bio de Instagram.
 
+**En vivo:** https://rasec-dev.pages.dev (Cloudflare Pages: cada push a `main` se publica solo)
+
 Muestra de entrada los proyectos en vivo y redirige a cada sitio con una transición animada:
 
-- **Brasa Marina** (restaurante): https://brasamarina-rasecdev.netlify.app
-- **Rasec Barber Studio** (barbería): https://rasecbarberstudio-rasecdev.netlify.app
+- **Brasa Marina** (restaurante): https://brasamarina-rasecdev.pages.dev
+- **Rasec Barber Studio** (barbería): https://rasecbarberstudio-rasecdev.pages.dev
 - **Vitrina** (catálogo marca blanca con pedidos por WhatsApp): https://vitrina-demo.pages.dev
 
 ## Tecnologías
