@@ -4,11 +4,14 @@ Landing page / portafolio de Rasec Dev para el link de la bio de Instagram.
 
 **En vivo:** https://rasec-dev.pages.dev (Cloudflare Pages: cada push a `main` se publica solo)
 
-Muestra de entrada los proyectos en vivo y redirige a cada sitio con una transición animada:
+Muestra de entrada los proyectos y lleva a la demo de cada uno con una transición animada. Las demos tienen el
+panel administrativo abierto y guardan los cambios solo en el navegador de quien las prueba:
 
-- **Brasa Marina** (restaurante): https://brasamarina-rasecdev.pages.dev
-- **Rasec Barber Studio** (barbería): https://rasecbarberstudio-rasecdev.pages.dev
-- **Vitrina** (catálogo marca blanca con pedidos por WhatsApp): https://vitrina-demo.pages.dev
+| Proyecto | Demo (panel abierto) | Sitio con Supabase |
+| --- | --- | --- |
+| **Brasa Marina** (restaurante) | https://brasamarina-demo.pages.dev | https://brasamarina-rasecdev.pages.dev |
+| **Rasec Barber Studio** (barbería) | https://rasecbarberstudio-demo.pages.dev | https://rasecbarberstudio-rasecdev.pages.dev |
+| **Vitrina** (catálogo con pedidos por WhatsApp) | https://vitrina-demo.pages.dev | https://vitrina-tienda.pages.dev |
 
 ## Tecnologías
 
