@@ -2,15 +2,16 @@
 
 Landing page / portafolio de Rasec Dev para el link de la bio de Instagram.
 
-Muestra de entrada los dos proyectos en vivo y redirige a cada sitio con una transición animada:
+Muestra de entrada los proyectos en vivo y redirige a cada sitio con una transición animada:
 
 - **Brasa Marina** (restaurante): https://brasamarina-rasecdev.netlify.app
 - **Rasec Barber Studio** (barbería): https://rasecbarberstudio-rasecdev.netlify.app
+- **Vitrina** (catálogo marca blanca con pedidos por WhatsApp): https://vitrina-demo.pages.dev
 
 ## Tecnologías
 
 - HTML, CSS y JavaScript, sin frameworks ni paso de build.
-- Imágenes en WebP optimizadas (~330 KB en total) para que cargue rápido desde el navegador de Instagram.
+- Imágenes en WebP optimizadas (~480 KB en total) para que cargue rápido desde el navegador de Instagram.
 
 ## Estructura
 
