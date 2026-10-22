@@ -1,0 +1,16 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-21",
+  "file": "Zavitar-Setup-0.1.0.exe",
+  "url": "https://github.com/NotCronox/zavitar/releases/download/v0.1.0/Zavitar-Setup-0.1.0.exe",
+  "sha256": "PENDING",
+  "size_mb": "PENDING",
+  "requires": "Windows 10 (1809+) / 11, 64-bit",
+  "releases_page": "https://github.com/NotCronox/zavitar/releases",
+  "portable": {
+    "file": "Zavitar-0.1.0-win-x64.zip",
+    "url": "https://github.com/NotCronox/zavitar/releases/download/v0.1.0/Zavitar-0.1.0-win-x64.zip",
+    "sha256": "9c238f0e411e30bb838d558c05d005af4b9ab88553196f458554fadbb9486d20",
+    "size_mb": 61.9
+  }
+}

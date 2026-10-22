@@ -350,6 +350,32 @@ ol { list-style: none; }
   .proj-rev .proj-body { order: 1; }
 }
 
+/* Proyecto 04 · Zavitar (programa de escritorio) */
+.online-beta { color: var(--c); }
+.online-beta i, .online-beta i::after { background: var(--c); }
+.l-win { left: 0; top: 0; width: 55%; z-index: 1; }
+.l-panel { right: 0; bottom: 3%; width: 55%; z-index: 2; }
+.l-panel .float { animation-duration: 8s; animation-delay: -3s; }
+.proj-app .l-tag1 { right: 3%; top: 8%; }
+.proj-app .l-tag2 { left: 30%; top: auto; bottom: 0; }
+.appwin { display: block; border-radius: 10px; overflow: hidden; background: #0b0c10; border: 1px solid var(--line-2); box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+.appwin-bar { display: flex; align-items: center; gap: 7px; height: clamp(20px, 3.4vw, 28px); padding: 0 10px; background: #14161c; border-bottom: 1px solid var(--line); }
+.appwin-ic { width: clamp(10px, 1.8vw, 14px); height: clamp(10px, 1.8vw, 14px); flex: none; }
+.appwin-bar em { font-style: normal; font-size: clamp(8px, 1.6vw, 11.5px); color: var(--ink-2); }
+.appwin-ctl { width: clamp(30px, 5vw, 46px); height: auto; margin-left: auto; color: var(--mut); }
+.appwin img { width: 100%; height: auto; }
+.appwin-panel { background: #0b0c10; }
+
+/* Accesos rápidos con cuatro entradas: cuadrícula 2 × 2 en celular */
+.qk:nth-of-type(3) { grid-column: auto; aspect-ratio: 1 / 1.02; }
+.qk:nth-of-type(3) .qk-img { background-size: auto 150%; background-position: var(--pos, 85% 30%); }
+.qk.qk-app .qk-img { background-size: cover; background-position: 50% 50%; }
+@media (min-width: 960px) {
+  .qk, .qk:nth-of-type(3) { aspect-ratio: 16 / 6.4; }
+  .qk:nth-of-type(3) .qk-img { background-size: 210% auto; background-position: 100% 35%; }
+  .qk.qk-app .qk-img { background-size: cover; background-position: 50% 50%; }
+}
+
 /* ================= Servicios ================= */
 .svc-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
 @media (min-width: 640px) { .svc-grid { grid-template-columns: 1fr 1fr; } }
