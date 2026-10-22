@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zavitar · Convierte archivos con un arrastre (beta para Windows)</title>
+<meta name="description" content="Zavitar es un programa gratuito para Windows: arrastra un archivo, mantén Shift y suéltalo sobre el formato que necesitas. Imágenes, PDF, audio y video, sin subir nada a internet. Beta 0.1.">
+<meta name="theme-color" content="#08090c">
+<link rel="canonical" href="https://rasec-dev.pages.dev/zavitar/">
+<meta property="og:title" content="Zavitar · Convierte cualquier archivo con un arrastre">
+<meta property="og:description" content="Arrastra, mantén Shift y suelta sobre el formato. La copia queda junto al original, sin abrir programas ni subir nada. Beta gratuita para Windows.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rasec-dev.pages.dev/zavitar/">
+<meta property="og:image" content="https://rasec-dev.pages.dev/zavitar/assets/og.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="La rueda de formatos de Zavitar sobre un fondo oscuro">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2308090c'/%3E%3Cg transform='translate(4.4 4.4) scale(2.3)'%3E%3Ccircle cx='12' cy='12' r='8.6' fill='%23FF9A1F'/%3E%3Cpath d='M13.3 11V2.4M13.59 12.39l6.73-5.36M12.69 13.49l8.38 1.91M11.26 13.47l3.73 7.74M10.39 12.34l-3.73 7.75M10.74 10.96l-8.39 1.91M12.03 10.36 5.3 5' stroke='%2308090c' stroke-width='1.3' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%2308090c'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/wheel-dark-6.webp">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="zavitar.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body class="zv">
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-spot"></div>
+  <div class="bg-beams" id="beams"></div>
+</div>
+
+<header class="top" id="top">
+  <a class="logo" href="../" aria-label="Rasec Dev, volver al portafolio">
+    <span class="logo-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M8 19V5h5a4 4 0 0 1 0 8H8m5 0 5 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="logo-txt">Rasec<span>Dev</span></span>
+  </a>
+  <nav class="top-r" aria-label="Navegación principal">
+    <a class="btn btn-sm btn-dark" href="../">
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M19 12H5m0 0 6-6m-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Volver al portafolio</span>
+    </a>
+    <a class="btn btn-sm btn-light zv-top-dl" href="#descargar">Descargar</a>
+  </nav>
+</header>
+
+<main id="contenido" tabindex="-1">
+  <!-- HERO -->
+  <section class="zv-hero" aria-labelledby="zv-title">
+    <div class="zv-hero-txt">
+      <p class="zv-brand" data-in style="--d:.05s">
+        <svg class="zv-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#zv-mark"/></svg>
+        <span>Zavitar</span>
+      </p>
+      <p class="kicker" data-in style="--d:.15s"><span class="kicker-dot"></span>Beta 0.1 · Windows</p>
+      <h1 class="zv-title" id="zv-title" data-in style="--d:.25s">Convierte cualquier archivo con un arrastre.</h1>
+      <p class="lead" data-in style="--d:.4s">Arrastra un archivo, mantén Shift y suéltalo sobre el formato que necesitas. Zavitar guarda la copia junto al original: sin abrir programas, sin subir nada.</p>
+      <div class="hero-cta" data-in style="--d:.55s">
+        <a class="btn btn-light zv-dl-btn magnetic" href="#descargar">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M12 4v11m0 0-5-5m5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Descargar para Windows</span>
+        </a>
+        <a class="btn btn-dark magnetic" href="#como-funciona"><span>Cómo funciona</span></a>
+      </div>
+      <p class="zv-meta mono" data-in style="--d:.65s" data-release="meta">Versión 0.1.0 · gratis</p>
+    </div>
+
+    <div class="zv-stage" data-in style="--d:.35s" role="img" aria-label="Animación: un archivo se arrastra hacia la rueda de formatos de Zavitar mientras se mantiene pulsada la tecla Shift y se suelta sobre el formato HEIC.">
+      <div class="zv-desk" aria-hidden="true">
+        <div class="zv-wheel">
+          <img src="assets/wheel-dark-6.webp" alt="" width="582" height="582">
+        </div>
+        <span class="zv-hit"></span>
+        <span class="zv-drag">
+          <span class="zv-file">
+            <span class="zv-file-ic"><i></i></span>
+            <span class="zv-file-n">Vacaciones en Asturias.jpg</span>
+          </span>
+          <svg class="zv-cursor" viewBox="0 0 24 24"><path d="M5 3l14 7.2-6.1 1.6L10 18z" fill="#fff" stroke="#08090c" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="zv-key"><kbd>⇧ Shift</kbd></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="section" id="como-funciona" aria-labelledby="h-como">
+    <header class="sec-head reveal">
+      <p class="sec-num mono">01 — Cómo funciona</p>
+      <h2 id="h-como">Tres gestos, ninguna ventana</h2>
+      <p>No hay programa que abrir ni menú que recorrer: Zavitar espera en la bandeja y aparece solo cuando arrastras un archivo.</p>
+    </header>
+    <ol class="zv-steps">
+      <li class="zv-step reveal">
+        <div class="zv-step-vis zv-vis-drag" aria-hidden="true">
+          <span class="zv-file zv-file-sm"><span class="zv-file-ic"><i></i></span><span class="zv-file-n">Informe.pdf</span></span>
+          <svg class="zv-cursor" viewBox="0 0 24 24"><path d="M5 3l14 7.2-6.1 1.6L10 18z" fill="#fff" stroke="#08090c" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="step-n mono">01</span>
+        <h3>Arrastra</h3>
+        <p>Arrastra un archivo desde el Explorador o el escritorio.</p>
+      </li>
+      <li class="zv-step reveal" style="--d:.08s">
+        <div class="zv-step-vis zv-vis-wheel" aria-hidden="true">
+          <kbd>⇧ Shift</kbd>
+          <span class="zv-mini-wheel"><img src="assets/wheel-dark-6.webp" alt="" width="582" height="582" loading="lazy"></span>
+        </div>
+        <span class="step-n mono">02</span>
+        <h3>Mantén Shift</h3>
+        <p>Aparece la rueda de formatos junto al cursor.</p>
+      </li>
+      <li class="zv-step reveal" style="--d:.16s">
+        <div class="zv-step-vis zv-vis-toast" aria-hidden="true">
+          <img src="assets/toast-success-dark.webp" alt="" width="624" height="216" loading="lazy">
+        </div>
+        <span class="step-n mono">03</span>
+        <h3>Suelta sobre un formato</h3>
+        <p>La copia queda junto al original y un aviso discreto te lo confirma.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- CARACTERÍSTICAS -->
+  <section class="section" id="caracteristicas" aria-labelledby="h-car">
+    <header class="sec-head reveal">
+      <p class="sec-num mono">02 — Características</p>
+      <h2 id="h-car">Hecho para quedarse en segundo plano</h2>
+    </header>
+    <div class="svc-grid zv-feats">
+      <article class="svc reveal">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><path d="M13 3 5 14h6l-1 7 8-11h-6z"/></svg></span>
+        <h3>Ligero</h3>
+        <p>En reposo ocupa unos 8–17 MB de memoria y ~0 % de CPU.</p>
+      </article>
+      <article class="svc reveal" style="--d:.04s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+        <h3>Privado</h3>
+        <p>Todo se procesa en tu PC: el programa no sube archivos ni envía datos. Sin telemetría.</p>
+      </article>
+      <article class="svc reveal" style="--d:.08s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg></span>
+        <h3>Sin estorbar</h3>
+        <p>No roba el foco y no aparece si no estás arrastrando archivos.</p>
+      </article>
+      <article class="svc reveal" style="--d:.12s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+        <h3>Lotes con progreso</h3>
+        <p>Suelta varios archivos a la vez y sigue el avance de cada uno.</p>
+      </article>
+      <article class="svc reveal">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <h3>Seguro por diseño</h3>
+        <p>Cada conversión corre en un proceso aislado con límites de memoria y tiempo. Un archivo dañado no tumba el programa.</p>
+      </article>
+      <article class="svc reveal" style="--d:.04s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></span>
+        <h3>Claro y oscuro</h3>
+        <p>Sigue el tema que tengas en Windows.</p>
+      </article>
+      <article class="svc reveal" style="--d:.08s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><path d="M4 6h9M8.5 4v2c0 4-2 7-4.5 8.5M6 10c1 2 3.5 4 6 5"/><path d="m13 20 4-9 4 9M14.5 17h5"/></svg></span>
+        <h3>Español e inglés</h3>
+        <p>La interfaz está disponible en los dos idiomas.</p>
+      </article>
+      <article class="svc reveal" style="--d:.12s">
+        <span class="svc-ic"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="11" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4"/></svg></span>
+        <h3>Nunca sobrescribe</h3>
+        <p>La conversión crea una copia nueva; tu archivo original queda intacto.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- FORMATOS -->
+  <section class="section" id="formatos" aria-labelledby="h-for">
+    <header class="sec-head reveal">
+      <p class="sec-num mono">03 — Formatos</p>
+      <h2 id="h-for">Qué puede convertir hoy</h2>
+    </header>
+    <div class="zv-formats reveal">
+      <div class="zv-fg">
+        <h3>Imágenes</h3>
+        <ul class="zv-chips mono">
+          <li>JPG</li><li>PNG</li><li>WEBP</li><li>HEIC<sup>*</sup></li><li>AVIF</li><li>TIFF</li><li>BMP</li><li>GIF</li><li class="zv-chip-note">SVG (como origen)</li><li class="zv-chip-to">a PDF</li>
+        </ul>
+      </div>
+      <div class="zv-fg">
+        <h3>PDF</h3>
+        <ul class="zv-chips mono">
+          <li class="zv-chip-to">a PNG / JPG (primera página)</li><li class="zv-chip-to">a TXT</li><li class="zv-chip-to">de imagen a PDF</li>
+        </ul>
+      </div>
+      <div class="zv-fg">
+        <h3>Audio</h3>
+        <ul class="zv-chips mono">
+          <li>MP3</li><li>M4A</li><li>WAV</li><li>FLAC</li><li>OGG</li><li>OPUS</li>
+        </ul>
+      </div>
+      <div class="zv-fg">
+        <h3>Video</h3>
+        <ul class="zv-chips mono">
+          <li>MP4</li><li>MKV</li><li>WEBM</li><li>MOV</li><li>AVI</li><li>GIF</li><li class="zv-chip-to">extraer audio</li>
+        </ul>
+      </div>
+      <p class="zv-foot-note"><sup>*</sup> HEIC requiere las extensiones de Microsoft Store (HEIF y HEVC); según tu equipo pueden ser gratuitas o de pago.</p>
+    </div>
+  </section>
+
+  <!-- CAPTURAS -->
+  <section class="section" id="capturas" aria-labelledby="h-cap">
+    <header class="sec-head reveal">
+      <p class="sec-num mono">04 — Capturas</p>
+      <h2 id="h-cap">Así se ve en tu escritorio</h2>
+      <p>Capturas reales del programa. Toca una para verla en grande.</p>
+    </header>
+    <div class="zv-gallery">
+      <figure class="zv-shot zv-shot-sq reveal">
+        <button type="button" class="zv-shot-btn" data-full="assets/wheel-dark-12.webp" aria-label="Ampliar: rueda de formatos en tema oscuro">
+          <img src="assets/wheel-dark-12.webp" alt="Rueda de formatos en tema oscuro con doce formatos de audio y video alrededor de una grabación de pantalla" width="582" height="582" loading="lazy">
+        </button>
+        <figcaption>Rueda en tema oscuro, con un video</figcaption>
+      </figure>
+      <figure class="zv-shot zv-shot-sq reveal" style="--d:.06s">
+        <button type="button" class="zv-shot-btn" data-full="assets/wheel-light-9.webp" aria-label="Ampliar: rueda de formatos en tema claro">
+          <img src="assets/wheel-light-9.webp" alt="Rueda de formatos en tema claro con nueve formatos de imagen para tres archivos" width="582" height="582" loading="lazy">
+        </button>
+        <figcaption>Rueda en tema claro con 9 formatos</figcaption>
+      </figure>
+      <figure class="zv-shot zv-shot-sq reveal" style="--d:.12s">
+        <button type="button" class="zv-shot-btn" data-full="assets/progress-dark.webp" aria-label="Ampliar: progreso de un lote">
+          <img src="assets/progress-dark.webp" alt="Panel de progreso convirtiendo tres archivos: uno hecho, otro al 42 % y otro en cola" width="624" height="356" loading="lazy">
+        </button>
+        <figcaption>Progreso de un lote</figcaption>
+      </figure>
+      <figure class="zv-shot zv-shot-wide reveal">
+        <button type="button" class="zv-shot-btn" data-full="assets/toast-success-dark.webp" aria-label="Ampliar: aviso al terminar">
+          <img src="assets/toast-success-dark.webp" alt="Aviso de conversión terminada: Vacaciones en Asturias.heic a JPG, con enlace para mostrar en la carpeta" width="624" height="216" loading="lazy">
+        </button>
+        <figcaption>Aviso al terminar</figcaption>
+      </figure>
+      <figure class="zv-shot zv-shot-wide reveal" style="--d:.06s">
+        <button type="button" class="zv-shot-btn" data-full="assets/toast-failure-dark.webp" aria-label="Ampliar: aviso de error">
+          <img src="assets/toast-failure-dark.webp" alt="Aviso de error que explica que el PDF no se pudo convertir porque está protegido con contraseña (interfaz en inglés)" width="624" height="240" loading="lazy">
+        </button>
+        <figcaption>Aviso de error legible (interfaz en inglés)</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- DESCARGA -->
+  <!-- Los datos de la versión salen de release.json (lo lee zavitar.js). Los enlaces directos al
+       instalador y al zip solo funcionan cuando el release v0.1.0 esté publicado en GitHub.
+       Mientras el SHA-256 del instalador sea "PENDING", su bloque de hash queda oculto. -->
+  <section class="section" id="descargar" aria-labelledby="h-dl" tabindex="-1">
+    <div class="zv-dl reveal">
+      <span class="beam" aria-hidden="true"></span>
+      <div class="zv-dl-in">
+        <div class="zv-dl-head">
+          <p class="sec-num mono">05 — Descarga</p>
+          <h2 id="h-dl">Descarga Zavitar</h2>
+          <p class="zv-req">Windows 10 (1809 o posterior) u 11, 64 bits. No necesitas nada más: ni .NET ni Visual C++; sin permisos de administrador.</p>
+          <div class="zv-dl-cta">
+            <a class="btn btn-light btn-lg zv-dl-btn" id="dlBtn" href="https://github.com/NotCronox/zavitar/releases" rel="noopener">
+              <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M12 4v11m0 0-5-5m5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="dlLabel">Descargar Zavitar 0.1.0</span>
+            </a>
+            <p class="zv-dl-sub mono"><span id="dlFile">Instalador para Windows</span> · <span id="dlDate">versión 0.1.0 · 21/10/2026</span></p>
+            <p class="zv-dl-warn" id="dlWarn" hidden>No se pudo cargar la información de la versión. Puedes descargarla desde la <a href="https://github.com/NotCronox/zavitar/releases" rel="noopener">página de versiones en GitHub</a>.</p>
+          </div>
+
+          <div class="zv-hash" id="hashSetup" hidden>
+            <p class="zv-label">SHA-256 del instalador</p>
+            <div class="zv-code">
+              <code class="mono zv-sha" id="shaSetup"></code>
+              <button type="button" class="zv-copy" data-copy-from="shaSetup">Copiar</button>
+            </div>
+          </div>
+
+          <div class="zv-portable">
+            <h3>Versión portable (zip)</h3>
+            <p><a class="zv-link" id="zipLink" href="https://github.com/NotCronox/zavitar/releases" rel="noopener"><span id="zipLabel">Descargar Zavitar-0.1.0-win-x64.zip (62 MB)</span></a></p>
+            <p class="zv-label">SHA-256 del zip</p>
+            <div class="zv-code">
+              <code class="mono zv-sha" id="shaZip">9c238f0e411e30bb838d558c05d005af4b9ab88553196f458554fadbb9486d20</code>
+              <button type="button" class="zv-copy" data-copy-from="shaZip">Copiar</button>
+            </div>
+            <p class="zv-small">Para instalarla, descomprime el zip, abre PowerShell en esa carpeta y ejecuta:</p>
+            <div class="zv-code">
+              <code class="mono" id="cmdInstall">powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1</code>
+              <button type="button" class="zv-copy" data-copy-from="cmdInstall">Copiar</button>
+            </div>
+            <p class="zv-small"><a class="zv-link" id="relPage" href="https://github.com/NotCronox/zavitar/releases" rel="noopener">Todas las versiones en GitHub</a></p>
+          </div>
+        </div>
+
+        <div class="zv-install">
+          <h3>Instalación</h3>
+          <ol class="zv-inst-steps">
+            <li><span class="step-n mono">1</span><div><p>Descarga <span class="mono zv-inline" data-release="file">Zavitar-Setup-0.1.0.exe</span>.</p></div></li>
+            <li><span class="step-n mono">2</span><div><p>Ábrelo con doble clic.</p></div></li>
+            <li><span class="step-n mono">3</span><div><p>Listo: se instala solo en tu usuario, sin permisos de administrador, y Zavitar queda en la bandeja.</p></div></li>
+          </ol>
+
+          <div class="zv-tips">
+            <div>
+              <h4>Comprobar la descarga</h4>
+              <p>En PowerShell, en la carpeta de descargas, ejecuta esto y compara el resultado con el SHA-256 publicado en esta página:</p>
+              <div class="zv-code">
+                <code class="mono" id="cmdHash">Get-FileHash -Algorithm SHA256 .\Zavitar-Setup-0.1.0.exe</code>
+                <button type="button" class="zv-copy" data-copy-from="cmdHash">Copiar</button>
+              </div>
+            </div>
+            <div>
+              <h4>Desinstalar</h4>
+              <p>Configuración de Windows → Aplicaciones → Zavitar, o ejecuta <code class="mono zv-inline">uninstall.ps1</code> desde la carpeta de instalación.</p>
+            </div>
+          </div>
+
+          <aside class="zv-note" aria-labelledby="h-ss">
+            <h4 id="h-ss">¿Windows muestra un aviso de SmartScreen o tu antivirus lo marca?</h4>
+            <p>El instalador de Zavitar aún no tiene firma digital (es una beta) y el programa usa un gancho de teclado/ratón para detectar el arrastre, por eso algunos antivirus pueden avisar. Puedes comprobar el hash publicado aquí. Si Windows muestra «Windows protegió tu PC», elige «Más información» → «Ejecutar de todos modos».</p>
+          </aside>
+        </div>
+      </div>
+    </div>
+    <p class="zv-sr" aria-live="polite" id="copyLive"></p>
+  </section>
+
+  <!-- BETA -->
+  <section class="section" id="beta" aria-labelledby="h-beta">
+    <header class="sec-head reveal">
+      <p class="sec-num mono">06 — Beta</p>
+      <h2 id="h-beta">Beta: lo que debes saber</h2>
+      <p>Es la primera versión pública. Esto es lo que todavía no hace o lo que depende de tu equipo.</p>
+    </header>
+    <div class="zv-beta reveal">
+      <div>
+        <h3>Limitaciones actuales</h3>
+        <ul class="zv-list">
+          <li>Un PDF de varias páginas convertido a imagen genera solo la primera página.</li>
+          <li>HEIC necesita las extensiones de Microsoft Store. Reinicia Zavitar después de instalarlas.</li>
+          <li>Convertir video a MP4 depende de un codificador del equipo; en las ediciones N de Windows hace falta el Media Feature Pack.</li>
+          <li>No funciona al arrastrar desde aplicaciones ejecutadas como administrador.</li>
+          <li>Todavía no convierte documentos Word ni EPUB.</li>
+          <li>Por ahora no hay opciones de calidad.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Próximamente</h3>
+        <ul class="zv-list zv-list-next">
+          <li>Todas las páginas de un PDF, o un rango.</li>
+          <li>Varias imágenes en un solo PDF.</li>
+          <li>Documentos DOCX.</li>
+          <li>Herramientas: comprimir, redimensionar, quitar metadatos…</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGAL -->
+  <section class="section" id="licencia" aria-labelledby="h-lic">
+    <div class="zv-legal reveal">
+      <div>
+        <p class="sec-num mono">07 — Licencia y privacidad</p>
+        <h2 id="h-lic">Gratis, local y sin datos</h2>
+      </div>
+      <div class="zv-legal-txt">
+        <p class="zv-privacy">Zavitar no se conecta a internet ni recoge datos.</p>
+        <p>Zavitar es gratuito y se ofrece tal cual, sin garantía. Incluye FFmpeg (programa GPL independiente) y otras librerías con sus propias licencias; los avisos y la oferta de código fuente de FFmpeg vienen en la carpeta <code class="mono zv-inline">licenses</code> del instalador. Contacto para solicitar el código fuente: <a class="mono zv-mail" href="mailto:cogjo0729@gmail.com">cogjo0729@gmail.com</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="section" id="contacto" aria-labelledby="h-con">
+    <div class="cta reveal">
+      <span class="beam" aria-hidden="true"></span>
+      <div class="cta-in">
+        <p class="sec-num mono">08 — Contacto</p>
+        <h2 id="h-con">¿Algo no funciona o te falta un formato?</h2>
+        <p>Cuéntamelo: tus comentarios sobre la beta ayudan a decidir qué viene después.</p>
+        <div class="cta-btns">
+          <a class="btn btn-light btn-lg magnetic" href="https://wa.me/573126975100?text=%C2%A1Hola%20Rasec%20Dev!%20Vi%20tu%20portafolio%20y%20quiero%20una%20p%C3%A1gina%20web%20para%20mi%20negocio." target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><use href="#ic-wa"/></svg>
+            <span>Escribir por WhatsApp</span>
+          </a>
+          <a class="btn btn-dark btn-lg magnetic" href="https://ig.me/m/rasec.dev" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>
+            <span>Instagram</span>
+          </a>
+        </div>
+        <dl class="contact mono">
+          <div><dt>Correo</dt><dd><a href="mailto:cogjo0729@gmail.com">cogjo0729@gmail.com</a></dd></div>
+          <div><dt>Instagram</dt><dd><a href="https://instagram.com/rasec.dev" target="_blank" rel="noopener">@rasec.dev</a></dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <a class="zv-foot-brand" href="../"><span class="logo-txt">Rasec<span>Dev</span></span></a>
+  <span class="mono">© <span id="year">2026</span> · Zavitar beta 0.1</span>
+</footer>
+
+<a class="wa-float" href="https://wa.me/573126975100?text=%C2%A1Hola%20Rasec%20Dev!%20Vi%20tu%20portafolio%20y%20quiero%20una%20p%C3%A1gina%20web%20para%20mi%20negocio." target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><use href="#ic-wa"/></svg>
+</a>
+
+<dialog class="zv-lightbox" id="lightbox" aria-label="Captura ampliada">
+  <button type="button" class="zv-lb-close" id="lbClose" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+  </button>
+  <img id="lbImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+  <p id="lbCap"></p>
+</dialog>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="zv-mark" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.6" fill="#FF9A1F"/>
+    <path d="M13.3 11V2.4M13.59 12.39l6.73-5.36M12.69 13.49l8.38 1.91M11.26 13.47l3.73 7.74M10.39 12.34l-3.73 7.75M10.74 10.96l-8.39 1.91M12.03 10.36 5.3 5" fill="none" stroke="var(--zv-cut, #08090c)" stroke-width="1.3" stroke-linecap="round"/>
+    <circle cx="12" cy="12" r="2" fill="var(--zv-cut, #08090c)"/>
+  </symbol>
+  <symbol id="ic-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.23 8.23 0 0 1-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.23 8.23Zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.29Z"/></symbol>
+</svg>
+
+<script src="zavitar.js"></script>
+</body>
+</html>
