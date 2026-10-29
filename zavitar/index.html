@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Zavitar · Convierte archivos con un arrastre (beta para Windows)</title>
-<meta name="description" content="Zavitar es un programa gratuito para Windows: arrastra un archivo, mantén Shift y suéltalo sobre el formato que necesitas. Imágenes, PDF, audio y video, sin subir nada a internet. Beta 0.1.">
+<meta name="description" content="Zavitar es un programa gratuito para Windows: arrastra un archivo, mantén Shift y suéltalo sobre el formato que necesitas. Imágenes, PDF, audio y video, sin subir nada a internet. Beta 0.2.">
 <meta name="theme-color" content="#08090c">
 <link rel="canonical" href="https://rasec-dev.pages.dev/zavitar/">
 <meta property="og:title" content="Zavitar · Convierte cualquier archivo con un arrastre">
@@ -60,7 +60,7 @@
         <svg class="zv-mark" viewBox="0 0 24 24" aria-hidden="true"><use href="#zv-mark"/></svg>
         <span>Zavitar</span>
       </p>
-      <p class="kicker" data-in style="--d:.15s"><span class="kicker-dot"></span>Beta 0.1 · Windows</p>
+      <p class="kicker" data-in style="--d:.15s"><span class="kicker-dot"></span>Beta 0.2 · Windows</p>
       <h1 class="zv-title" id="zv-title" data-in style="--d:.25s">Convierte cualquier archivo con un arrastre.</h1>
       <p class="lead" data-in style="--d:.4s">Arrastra un archivo, mantén Shift y suéltalo sobre el formato que necesitas. Zavitar guarda la copia junto al original: sin abrir programas, sin subir nada.</p>
       <div class="hero-cta" data-in style="--d:.55s">
@@ -194,7 +194,13 @@
       <div class="zv-fg">
         <h3>PDF</h3>
         <ul class="zv-chips mono">
-          <li class="zv-chip-to">a PNG / JPG (primera página)</li><li class="zv-chip-to">a TXT</li><li class="zv-chip-to">de imagen a PDF</li>
+          <li class="zv-chip-to">a PNG / JPG (todas las páginas o un rango)</li><li class="zv-chip-to">a TXT</li><li class="zv-chip-to">a DOCX (solo texto)</li><li class="zv-chip-to">varias imágenes a un PDF</li>
+        </ul>
+      </div>
+      <div class="zv-fg">
+        <h3>Documentos</h3>
+        <ul class="zv-chips mono">
+          <li>DOCX</li><li class="zv-chip-to">a TXT</li><li class="zv-chip-to">a PDF (con Word instalado)</li>
         </ul>
       </div>
       <div class="zv-fg">
@@ -338,26 +344,21 @@
     <header class="sec-head reveal">
       <p class="sec-num mono">06 — Beta</p>
       <h2 id="h-beta">Beta: lo que debes saber</h2>
-      <p>Es la primera versión pública. Esto es lo que todavía no hace o lo que depende de tu equipo.</p>
+      <p>Zavitar sigue en beta. Esto es lo que todavía no hace o lo que depende de tu equipo.</p>
     </header>
     <div class="zv-beta reveal">
       <div>
         <h3>Limitaciones actuales</h3>
         <ul class="zv-list">
-          <li>Un PDF de varias páginas convertido a imagen genera solo la primera página.</li>
           <li>HEIC necesita las extensiones de Microsoft Store. Reinicia Zavitar después de instalarlas.</li>
           <li>Convertir video a MP4 depende de un codificador del equipo; en las ediciones N de Windows hace falta el Media Feature Pack.</li>
           <li>No funciona al arrastrar desde aplicaciones ejecutadas como administrador.</li>
-          <li>Todavía no convierte documentos Word ni EPUB.</li>
-          <li>Por ahora no hay opciones de calidad.</li>
+          <li>De DOCX a PDF hace falta Microsoft Word instalado. Todavía no convierte EPUB.</li>
         </ul>
       </div>
       <div>
         <h3>Próximamente</h3>
         <ul class="zv-list zv-list-next">
-          <li>Todas las páginas de un PDF, o un rango.</li>
-          <li>Varias imágenes en un solo PDF.</li>
-          <li>Documentos DOCX.</li>
           <li>Herramientas: comprimir, redimensionar, quitar metadatos…</li>
         </ul>
       </div>
@@ -407,7 +408,7 @@
 
 <footer class="foot">
   <a class="zv-foot-brand" href="../"><span class="logo-txt">Rasec<span>Dev</span></span></a>
-  <span class="mono">© <span id="year">2026</span> · Zavitar beta 0.1</span>
+  <span class="mono">© <span id="year">2026</span> · Zavitar beta 0.2</span>
 </footer>
 
 <a class="wa-float" href="https://wa.me/573126975100?text=%C2%A1Hola%20Rasec%20Dev!%20Vi%20tu%20portafolio%20y%20quiero%20una%20p%C3%A1gina%20web%20para%20mi%20negocio." target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">

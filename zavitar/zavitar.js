@@ -2,7 +2,7 @@
   Zavitar · página del programa
   - Lee release.json para el botón de descarga (instalador .exe), la versión, el tamaño, el
     SHA-256 y la versión portable (zip).
-    NOTA: las URL de descarga (GitHub Releases v0.1.0) solo serán válidas cuando el release
+    NOTA: las URL de descarga (GitHub Releases v0.2.0) solo serán válidas cuando el release
     esté publicado. Mientras sha256 o size_mb valgan "PENDING" no se muestran (el bloque del
     hash del instalador queda oculto). Si release.json no carga, la página deja el texto
     estático y los enlaces a la página de versiones de GitHub.
