@@ -114,3 +114,20 @@
   /* ---------- Si el 3D no arranca en 4 s, mostrar las imágenes de respaldo ---------- */
   setTimeout(() => { if (!root.classList.contains('has3d')) root.classList.add('no3d'); }, 4000);
 })();
+
+// Menú de teléfonos: abre una hoja con todas las secciones; se cierra al elegir una, con Escape o al girar a pantalla ancha
+(() => {
+  const btn = document.querySelector('.nav-menu'), sheet = document.getElementById('menu');
+  if (!btn || !sheet) return;
+  const root = document.documentElement;
+  const set = open => {
+    btn.setAttribute('aria-expanded', open);
+    btn.setAttribute('aria-label', open ? 'Cerrar el menú' : 'Abrir el menú');
+    if (open) { sheet.hidden = false; requestAnimationFrame(() => root.classList.add('menu-open')); sheet.querySelector('a').focus({ preventScroll: true }); }
+    else { root.classList.remove('menu-open'); setTimeout(() => { if (!root.classList.contains('menu-open')) sheet.hidden = true; }, 300); }
+  };
+  btn.addEventListener('click', () => set(!root.classList.contains('menu-open')));
+  sheet.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && root.classList.contains('menu-open')) { set(false); btn.focus(); } });
+  matchMedia('(min-width: 721px)').addEventListener('change', e => { if (e.matches) set(false); });
+})();

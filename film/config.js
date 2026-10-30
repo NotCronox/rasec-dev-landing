@@ -12,7 +12,7 @@ export const SEQUENCES = {
 };
 
 // Scroll por unidad de tiempo de la película
-export const UNIT = { wide: 50, tall: 42 }; // svh
+export const UNIT = { wide: 50, tall: 34 }; // svh
 
 // Cuadro de la secuencia donde la cámara está dentro de la pantalla: ahí termina la entrada y empieza la salida
 export const INSIDE = 400;

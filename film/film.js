@@ -13,7 +13,7 @@
 */
 import { SEQUENCES, UNIT, INSIDE, T } from './config.js';
 import { FrameSequence, FrameCanvas } from './frames.js';
-import { quadMatrix, mixQuad, coverQuad } from './quad.js';
+import { quadMatrix, mixQuad } from './quad.js';
 
 const root = document.documentElement;
 const film = document.querySelector('.film');
@@ -65,7 +65,7 @@ function build(mode) {
   root.classList.add('film-on');
   film.style.setProperty('--film-len', `${T.end * UNIT[mode]}svh`);
 
-  const seq = new FrameSequence({ dir: seqConf.dir, count: seqConf.count, keep: tall ? 40 : 60 });
+  const seq = new FrameSequence({ dir: seqConf.dir, count: seqConf.count, keep: tall ? 28 : 60 });
   const view = new FrameCanvas(canvas, stage);
   let corners = null; // esquinas de la pantalla por cuadro, exportadas desde Blender
   fetch(seqConf.screen).then(r => r.json()).then(j => { corners = j; render(); }).catch(() => {});
@@ -94,14 +94,14 @@ function build(mode) {
     const q = screenQuad(S.frame);
     if (!q) return;
     const onStage = q.map(([x, y]) => [rect.x + x * rect.w, rect.y + y * rect.h]);
-    const target = tall ? coverQuad(1440, 900, view.w, view.h) : fitQuad();
+    const target = fitQuad();
     screenEl.style.transform = quadMatrix(1440, 900, S.enter > 0 ? mixQuad(onStage, target, S.enter) : onStage);
     out.style.transform = quadMatrix(1440, 900, S.out < 1 ? mixQuad(onStage, target, S.out) : target);
     const still = quadMatrix(1440, 900, target);
     boxes.forEach(b => { b.style.transform = still; });
   }
 
-  // En pantallas anchas los videos caben enteros (16:10) en el espacio bajo el menú: nada queda cortado ni tapado
+  // Las pantallas 16:10 caben enteras en el espacio bajo el menú (en teléfonos, a lo ancho): nada queda cortado ni tapado
   function fitQuad() {
     const nav = parseFloat(getComputedStyle(root).getPropertyValue('--nav-h')) || 64;
     const pad = Math.max(12, view.w * 0.012), top = nav + pad;
@@ -129,7 +129,7 @@ function build(mode) {
   tl.fromTo(screenEl, { opacity: 0 }, { opacity: 1, duration: span(T.screenIn) }, T.screenIn[0]);
   tl.to(S, { enter: 1, duration: span(T.enter), ease: 'power2.inOut', onUpdate: render }, T.enter[0]);
   tl.to(canvas, { opacity: 0, duration: 0.6 }, T.enter[0] + 0.4);
-  tl.fromTo(screenEl, { borderRadius: 6 }, { borderRadius: tall ? 0 : 14, duration: span(T.enter) }, T.enter[0]);
+  tl.fromTo(screenEl, { borderRadius: 6 }, { borderRadius: 14, duration: span(T.enter) }, T.enter[0]);
   const brasaVideo = panel('brasa').querySelector(tall ? '.fp-tall' : '.fp-out');
   tl.fromTo(brasaVideo, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power1.inOut' }, T.enter[1]);
 
@@ -228,6 +228,7 @@ function build(mode) {
     scrub: 0.35,
     invalidateOnRefresh: true,
     onUpdate: self => {
+      root.classList.toggle('film-skipping', self.progress > 0.04 && tl.time() < T.panels[0].at); // solo en la entrada: después estorbaría a los pies
       if (self.progress > 0.002) seq.release();
       if (self.progress > 0.2 && !warm) { warm = true; panelImgs.forEach(im => { im.loading = 'eager'; }); } // las capturas, antes de que hagan falta
     },
@@ -244,7 +245,7 @@ function build(mode) {
   render();
   return () => { // limpieza al cambiar de modo (giro del teléfono, movimiento reducido)
     st.kill(); tl.kill(); seq.onload = null;
-    root.classList.remove('film-on');
+    root.classList.remove('film-on', 'film-skipping');
     gsap.set([copy, line, hint, screenEl, canvas, out, film.querySelector('.film-glow'), ...panels,
       ...film.querySelectorAll('.fp-cap, .fp-out, .fp-gloss, .fp-tall')], { clearProps: 'all' });
     screenEl.style.transform = out.style.transform = '';
