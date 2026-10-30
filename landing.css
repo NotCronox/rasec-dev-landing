@@ -155,6 +155,10 @@ html.menu-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .menu, .menu nav a { transition: none; } }
 @media (pointer: coarse) { .btn-sm { --h: 44px; } .nav-links a { padding: 12px 0; } }
 @media (prefers-reduced-transparency: reduce) { .nav.scrolled { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@media (pointer: coarse) {
+  .nav.scrolled { background: rgba(14, 14, 16, .94); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .fp-cap, .film-skip { background: rgba(14, 14, 16, .92); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
 
 /* ================= Inicio: la película del portátil ================= */
 /* Sección alta con un escenario fijo (sticky): el scroll recorre la línea de tiempo de film/film.js.

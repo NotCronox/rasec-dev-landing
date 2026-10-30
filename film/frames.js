@@ -5,11 +5,11 @@
   - Se guardan como mucho `keep` cuadros decodificados; los más lejanos se sueltan (vuelven a salir de la caché).
   - Si el cuadro pedido aún no llegó, se dibuja el más cercano que ya esté listo: nunca un hueco.
 */
-const CONCURRENCY = 6;
 
 export class FrameSequence {
-  constructor({ dir, count, keep = 60, ext = 'webp' }) {
+  constructor({ dir, count, keep = 60, ext = 'webp', concurrency = 6 }) {
     this.count = count;
+    this.concurrency = concurrency;
     this.keep = keep;
     this.url = i => `${dir}/${String(i).padStart(3, '0')}.${ext}`;
     this.imgs = new Array(count).fill(null); // Image decodificada o null
@@ -30,7 +30,7 @@ export class FrameSequence {
   release() { this.open = true; this.pump(); }
 
   pump() {
-    while (this.busy.size < CONCURRENCY) {
+    while (this.busy.size < this.concurrency) {
       const i = this.nextToLoad();
       if (i < 0) return;
       this.load(i);
@@ -49,10 +49,7 @@ export class FrameSequence {
 
   load(i) {
     this.busy.add(i);
-    const im = new Image();
-    im.decoding = 'async';
-    if (i === 0) im.fetchPriority = 'high';
-    im.src = this.url(i);
+    let im;
     const done = ok => {
       this.busy.delete(i);
       if (ok) {
@@ -65,7 +62,16 @@ export class FrameSequence {
         setTimeout(() => this.pump(), 1500);
       }
     };
-    im.decode().then(() => done(true), () => done(false));
+    // createImageBitmap decodifica fuera del hilo principal y deja la imagen lista para dibujar (mucho más liviano en teléfonos)
+    if (window.createImageBitmap) {
+      fetch(this.url(i), { priority: i === 0 ? 'high' : 'auto' }).then(r => (r.ok ? r.blob() : Promise.reject()))
+        .then(b => createImageBitmap(b)).then(bm => { im = bm; done(true); }, () => done(false));
+    } else {
+      im = new Image();
+      im.decoding = 'async';
+      im.src = this.url(i);
+      im.decode().then(() => done(true), () => done(false));
+    }
   }
 
   // Suelta los cuadros más lejanos cuando hay demasiados en memoria
@@ -75,7 +81,7 @@ export class FrameSequence {
     if (n <= this.keep) return;
     const loaded = this.imgs.map((im, i) => (im ? i : -1)).filter(i => i >= 0)
       .sort((a, b) => Math.abs(b - this.target) - Math.abs(a - this.target));
-    for (const i of loaded.slice(0, n - this.keep)) { this.imgs[i].src = ''; this.imgs[i] = null; }
+    for (const i of loaded.slice(0, n - this.keep)) { const im = this.imgs[i]; if (im.close) im.close(); else im.src = ''; this.imgs[i] = null; }
   }
 
   // El cuadro listo más cercano a i (o -1 si todavía no hay ninguno)
@@ -95,7 +101,9 @@ export class FrameSequence {
   - si no (cuadros anchos en un teléfono), se amplía por ancho y se centra: el portátil queda en el centro
 */
 export class FrameCanvas {
-  constructor(canvas, stage) {
+  constructor(canvas, stage, { dprCap = 2, blend = true } = {}) {
+    this.dprCap = dprCap;
+    this.blend = blend; // fundir dos cuadros vecinos (en teléfonos no: la mitad de trabajo por cuadro)
     this.canvas = canvas;
     this.stage = stage;
     this.ctx = canvas.getContext('2d', { alpha: false });
@@ -104,7 +112,7 @@ export class FrameCanvas {
   }
 
   resize() {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.dpr = Math.min(window.devicePixelRatio || 1, this.dprCap);
     this.w = this.stage.clientWidth;
     this.h = this.stage.clientHeight;
     this.canvas.width = Math.round(this.w * this.dpr);
@@ -125,7 +133,7 @@ export class FrameCanvas {
     const i0 = Math.floor(f), k = f - i0;
     const a = seq.nearest(i0);
     if (a < 0) return null;
-    const b = k > 0.02 && a === i0 && seq.imgs[i0 + 1] ? i0 + 1 : -1;
+    const b = this.blend && k > 0.02 && a === i0 && seq.imgs[i0 + 1] ? i0 + 1 : -1;
     const rect = this.place(size[0], size[1]);
     const key = `${a}|${b}|${b >= 0 ? k.toFixed(2) : ''}|${this.w}x${this.h}`;
     if (key === this.key) return rect;

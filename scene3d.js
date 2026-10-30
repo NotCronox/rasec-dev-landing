@@ -161,6 +161,7 @@ function start() {
 
     // La niebla es lenta: con la página quieta basta media frecuencia; al hacer scroll, todos los cuadros
     const moving = scrollY !== lastY; lastY = scrollY;
+    if (!first && root.classList.contains('film-covering')) return; // la película lo tapa entero
     if (!first && !moving && (skip = (skip + 1) % 2)) return;
     renderer.render(scene, camera);
     if (first) { first = false; root.classList.remove('no3d'); root.classList.add('has3d'); }

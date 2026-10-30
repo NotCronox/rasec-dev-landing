@@ -65,8 +65,8 @@ function build(mode) {
   root.classList.add('film-on');
   film.style.setProperty('--film-len', `${T.end * UNIT[mode]}svh`);
 
-  const seq = new FrameSequence({ dir: seqConf.dir, count: seqConf.count, keep: tall ? 28 : 60 });
-  const view = new FrameCanvas(canvas, stage);
+  const seq = new FrameSequence({ dir: seqConf.dir, count: seqConf.count, keep: tall ? 28 : 60, concurrency: tall ? 3 : 6 });
+  const view = new FrameCanvas(canvas, stage, tall ? { dprCap: 1.5, blend: false } : {});
   let corners = null; // esquinas de la pantalla por cuadro, exportadas desde Blender
   fetch(seqConf.screen).then(r => r.json()).then(j => { corners = j; render(); }).catch(() => {});
 
@@ -140,15 +140,17 @@ function build(mode) {
   tl.fromTo(glow, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, T.enter[0] + 0.4);
   tl.set(screenEl, { autoAlpha: 0 }, T.enter[1] + 0.4); // la caja de Brasa ya cubre la captura
 
+  const soft = tall ? '' : 'blur(0px) ', away = tall ? 'brightness(.35)' : 'blur(10px) brightness(.35)'; // el desenfoque a pantalla completa pesa en teléfonos
   const travel = (prev, el, p) => {
     const d = p.dur, depth = () => -view.w * 0.42;
-    tl.fromTo(prev, { xPercent: 0, rotationY: 0, z: 0, filter: 'blur(0px) brightness(1)', transformPerspective: 1400 },
-      { xPercent: -58, rotationY: 46, z: depth, filter: 'blur(10px) brightness(.35)', duration: d, ease: 'power3.inOut' }, p.at);
+    tl.fromTo(prev, { xPercent: 0, rotationY: 0, z: 0, filter: `${soft}brightness(1)`, transformPerspective: 1400 },
+      { xPercent: -58, rotationY: 46, z: depth, filter: away, duration: d, ease: 'power3.inOut' }, p.at);
     tl.set(el, { autoAlpha: 1 }, p.at);
-    tl.fromTo(el, { xPercent: 62, rotationY: -46, z: depth, filter: 'blur(10px) brightness(.35)', transformPerspective: 1400 },
-      { xPercent: 0, rotationY: 0, z: 0, filter: 'blur(0px) brightness(1)', duration: d, ease: 'power3.inOut' }, p.at + d * 0.08);
+    tl.fromTo(el, { xPercent: 62, rotationY: -46, z: depth, filter: away, transformPerspective: 1400 },
+      { xPercent: 0, rotationY: 0, z: 0, filter: `${soft}brightness(1)`, duration: d, ease: 'power3.inOut' }, p.at + d * 0.08);
     tl.set(prev, { autoAlpha: 0 }, p.at + d);
     const gloss = el.querySelector('.fp-gloss');
+    if (tall) return; // en teléfonos, sin el barrido de luz: una capa a pantalla completa menos
     tl.fromTo(gloss, { autoAlpha: 1, xPercent: -120 }, { xPercent: 120, duration: d * 0.8, ease: 'power2.inOut' }, p.at + d * 0.45);
     tl.set(gloss, { autoAlpha: 0 }, p.at + d * 1.3);
   };
@@ -203,7 +205,7 @@ function build(mode) {
     const v = m.v;
     if (m.busy || v.readyState < 1 || !v.duration) return;
     const time = Math.min(v.duration - 0.05, m.want * v.duration);
-    if (Math.abs(v.currentTime - time) < 0.02) return;
+    if (Math.abs(v.currentTime - time) < (tall ? 0.05 : 0.02)) return; // en teléfonos, saltos algo menos finos: menos trabajo para el decodificador
     m.busy = true;
     v.currentTime = time;
   }
@@ -216,7 +218,9 @@ function build(mode) {
     }
   };
 
-  tl.eventCallback('onUpdate', () => { syncPersona(); syncMedia(); }); // con el scrub, la línea de tiempo llega después que el scroll
+  // «Saltar al índice» solo durante la entrada: después estorbaría a los pies de los proyectos
+  const syncSkip = () => root.classList.toggle('film-skipping', tl.time() > 0.4 && tl.time() < T.panels[0].at);
+  tl.eventCallback('onUpdate', () => { syncPersona(); syncMedia(); syncSkip(); }); // con el scrub, la línea de tiempo llega después que el scroll
 
   const panelImgs = film.querySelectorAll('.film-panel img');
   let warm = false;
@@ -228,11 +232,12 @@ function build(mode) {
     scrub: 0.35,
     invalidateOnRefresh: true,
     onUpdate: self => {
-      root.classList.toggle('film-skipping', self.progress > 0.04 && tl.time() < T.panels[0].at); // solo en la entrada: después estorbaría a los pies
+      root.classList.toggle('film-covering', self.isActive && self.progress < 0.97); // el fondo 3D no se ve: descansa
       if (self.progress > 0.002) seq.release();
       if (self.progress > 0.2 && !warm) { warm = true; panelImgs.forEach(im => { im.loading = 'eager'; }); } // las capturas, antes de que hagan falta
     },
-    onLeave: () => window.Rasec?.film?.(null),
+    onLeave: () => { window.Rasec?.film?.(null); root.classList.remove('film-covering'); },
+    onLeaveBack: () => root.classList.remove('film-covering'),
     onEnterBack: () => { syncPersona(); syncMedia(); },
     onRefresh: () => { view.resize(); render(); },
   });
@@ -245,7 +250,7 @@ function build(mode) {
   render();
   return () => { // limpieza al cambiar de modo (giro del teléfono, movimiento reducido)
     st.kill(); tl.kill(); seq.onload = null;
-    root.classList.remove('film-on', 'film-skipping');
+    root.classList.remove('film-on', 'film-skipping', 'film-covering');
     gsap.set([copy, line, hint, screenEl, canvas, out, film.querySelector('.film-glow'), ...panels,
       ...film.querySelectorAll('.fp-cap, .fp-out, .fp-gloss, .fp-tall')], { clearProps: 'all' });
     screenEl.style.transform = out.style.transform = '';
