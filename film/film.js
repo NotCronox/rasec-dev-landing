@@ -5,10 +5,10 @@
     2. La captura real de Brasa Marina toma el lugar del vidrio (mismas esquinas, perspectiva exacta)
        y crece hasta la caja del video: entramos en la web y empieza su video de venta.
     3. Barber, Vitrina y Zavitar llegan con un travelling de cámara en 3D. Cada uno trae su video (Remotion y HyperFrames,
-       en video-landing), que avanza y retrocede con el scroll. En teléfonos, la grabación real del teléfono.
+       en video-landing), que se reproduce solo mientras el proyecto está en escena. En teléfonos, la grabación del teléfono.
     4. Zavitar vuelve a la pantalla del portátil, la cámara sale, baja y la escena se apaga en el negro
        donde empieza el índice de proyectos.
-  Todo avanza y retrocede con el scroll, también los videos (se piden solo cuando se acercan).
+  La película avanza y retrocede con el scroll; los videos corren solos (y se piden solo cuando se acercan).
   Con movimiento reducido queda una imagen fija.
 */
 import { SEQUENCES, UNIT, INSIDE, T } from './config.js';
@@ -37,14 +37,11 @@ function start() {
   });
 }
 
-// Pide un video de los proyectos (H.264 con un cuadro clave cada 8). Se baja entero y se reproduce desde memoria:
-// así se puede llevar a cualquier segundo al instante, aunque el servidor no acepte pedidos por rangos.
+// Pide un video de los proyectos (H.264): empieza a bajar antes de que haga falta para que arranque sin espera
 function loadVideo(v) {
-  const url = `${v.dataset.src}.mp4`;
-  fetch(url).then(r => (r.ok ? r.blob() : Promise.reject(r.status)))
-    .then(b => { v.src = URL.createObjectURL(b); })
-    .catch(() => { v.src = url; }) // sin fetch: directo
-    .finally(() => { v.preload = 'auto'; v.load(); });
+  v.src = `${v.dataset.src}.mp4`;
+  v.preload = 'auto';
+  v.load();
 }
 
 function build(mode) {
@@ -189,34 +186,32 @@ function build(mode) {
     if (id !== persona) { persona = id; window.Rasec?.film?.(id); }
   };
 
-  // Videos: se piden 4 unidades antes de su tramo; el scroll decide en qué segundo está cada uno
+  // Videos: se piden 4 unidades antes de su proyecto y se reproducen solos mientras el proyecto está en escena.
+  // El scroll solo decide qué proyecto se ve; al volver a uno que ya terminó, su video empieza de nuevo.
   const media = [...film.querySelectorAll('.fp-video')]
     .filter(v => !v.dataset.mode || v.dataset.mode === mode)
     .map(v => {
-      const p = T.panels.find(q => q.id === v.closest('.film-panel').dataset.persona);
-      const [a, b] = p.play;
-      const m = { v, a, b, asked: false, want: 0, busy: false };
-      v.addEventListener('seeked', () => { m.busy = false; seek(m); });
-      v.addEventListener('loadedmetadata', () => seek(m));
-      return m;
+      const i = T.panels.findIndex(q => q.id === v.closest('.film-panel').dataset.persona);
+      const p = T.panels[i], next = T.panels[i + 1];
+      const to = next ? next.at + next.dur * 0.5 : v.dataset.mode === 'tall' ? T.exit[0] + 0.3 : exitAt(592);
+      return { v, i, a: p.play[0], from: p.play[0] - 0.3, to, asked: false, done: false, rewind: false };
     });
-  // Un salto a la vez: el siguiente se pide cuando el navegador termina de mostrar el anterior
-  function seek(m) {
-    const v = m.v;
-    if (m.busy || v.readyState < 1 || !v.duration) return;
-    const time = Math.min(v.duration - 0.05, m.want * v.duration);
-    if (Math.abs(v.currentTime - time) < (tall ? 0.05 : 0.02)) return; // en teléfonos, saltos algo menos finos: menos trabajo para el decodificador
-    m.busy = true;
-    v.currentTime = time;
-  }
   const syncMedia = () => {
     const t = tl.time();
     for (const m of media) {
       if (!m.asked && t > m.a - 4) { m.asked = true; loadVideo(m.v); }
-      const k = Math.max(0, Math.min(1, (t - m.a) / (m.b - m.a)));
-      if (k !== m.want) { m.want = k; seek(m); }
+      const on = t >= m.from && t <= m.to;
+      if (on) {
+        // un video que terminó se queda en su último cuadro; solo empieza de nuevo si se sale del proyecto y se vuelve
+        if (m.rewind) { m.rewind = false; m.v.currentTime = 0; }
+        if (m.v.paused && !m.done) m.v.play().catch(() => {});
+      } else {
+        if (!m.v.paused) m.v.pause();
+        if (m.done) { m.done = false; m.rewind = true; }
+      }
     }
   };
+  const pauseAll = () => media.forEach(m => m.v.pause());
 
   // «Saltar al índice» solo durante la entrada: después estorbaría a los pies de los proyectos
   const syncSkip = () => root.classList.toggle('film-skipping', tl.time() > 0.4 && tl.time() < T.panels[0].at);
@@ -236,8 +231,8 @@ function build(mode) {
       if (self.progress > 0.002) seq.release();
       if (self.progress > 0.2 && !warm) { warm = true; panelImgs.forEach(im => { im.loading = 'eager'; }); } // las capturas, antes de que hagan falta
     },
-    onLeave: () => { window.Rasec?.film?.(null); root.classList.remove('film-covering'); },
-    onLeaveBack: () => root.classList.remove('film-covering'),
+    onLeave: () => { window.Rasec?.film?.(null); root.classList.remove('film-covering'); pauseAll(); },
+    onLeaveBack: () => { root.classList.remove('film-covering'); pauseAll(); },
     onEnterBack: () => { syncPersona(); syncMedia(); },
     onRefresh: () => { view.resize(); render(); },
   });
@@ -247,9 +242,44 @@ function build(mode) {
   const early = () => setTimeout(() => idle(() => seq.release()), 2500);
   if (document.readyState === 'complete') early(); else addEventListener('load', early, { once: true });
 
+  // Al terminar el video de un proyecto, la página sigue sola hasta el siguiente; después de Zavitar, la cámara sale
+  // del portátil y se llega al índice. Cualquier gesto de la persona (dedo, rueda, teclado) cancela el viaje.
+  const scrollAt = t => st.start + (t / T.end) * (st.end - st.start);
+  let auto = 0, lastInput = 0;
+  const stopAuto = () => { if (auto) cancelAnimationFrame(auto); auto = 0; };
+  const onInput = () => { lastInput = performance.now(); stopAuto(); };
+  const inputs = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+  inputs.forEach(e => addEventListener(e, onInput, { passive: true }));
+  const glide = (y1, ms) => {
+    stopAuto();
+    const y0 = scrollY, t0 = performance.now();
+    const ease = k => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+    const step = now => {
+      const k = Math.min(1, (now - t0) / ms);
+      scrollTo(0, y0 + (y1 - y0) * ease(k));
+      auto = k < 1 ? requestAnimationFrame(step) : 0;
+    };
+    auto = requestAnimationFrame(step);
+  };
+  const onEnded = m => () => {
+    m.done = true;
+    const t = tl.time();
+    if (t < m.from || t > m.to || auto) return;          // ya no está en escena, o ya va de viaje
+    if (performance.now() - lastInput < 700) return;      // la persona está haciendo scroll: manda ella
+    const next = T.panels[m.i + 1];
+    if (next) glide(scrollAt(next.play[0] + 0.1), tall ? 1900 : 2300);
+    else { // la salida del portátil, sin prisa, hasta el índice de proyectos
+      const index = document.getElementById('proyectos');
+      glide(index ? index.getBoundingClientRect().top + scrollY : scrollAt(T.end), tall ? 4800 : 5800);
+    }
+  };
+  const endedFns = media.map(m => { const fn = onEnded(m); m.v.addEventListener('ended', fn); return fn; });
+
   render();
   return () => { // limpieza al cambiar de modo (giro del teléfono, movimiento reducido)
-    st.kill(); tl.kill(); seq.onload = null;
+    st.kill(); tl.kill(); seq.onload = null; pauseAll(); stopAuto();
+    inputs.forEach(e => removeEventListener(e, onInput));
+    media.forEach((m, n) => m.v.removeEventListener('ended', endedFns[n]));
     root.classList.remove('film-on', 'film-skipping', 'film-covering');
     gsap.set([copy, line, hint, screenEl, canvas, out, film.querySelector('.film-glow'), ...panels,
       ...film.querySelectorAll('.fp-cap, .fp-out, .fp-gloss, .fp-tall')], { clearProps: 'all' });

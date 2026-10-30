@@ -24,13 +24,13 @@ export const T = {
   line: [6.4, 8.6],     // una línea mientras el portátil gira hacia nosotros
   screenIn: [9.2, 9.5], // la captura real de Brasa toma el lugar de la pantalla renderizada (es la misma imagen)
   enter: [10, 11],      // la pantalla crece hasta llenar el viewport: estamos dentro de Brasa Marina
-  panels: [             // cada proyecto: cuándo llega (at, dur del travelling) y el tramo en que su video avanza con el scroll
-    { id: 'brasa',   at: 10.5, dur: 0.6, play: [11.0, 15.2] },
-    { id: 'barber',  at: 15.4, dur: 1.4, play: [16.6, 21.0] },
-    { id: 'vitrina', at: 21.2, dur: 1.4, play: [22.4, 26.8] },
-    { id: 'zavitar', at: 27.0, dur: 1.4, play: [28.2, 32.2] },
+  panels: [             // cada proyecto: cuándo llega (at, dur del travelling) y desde cuándo corre su video (play),
+    { id: 'brasa',   at: 10.5, dur: 0.6, play: [11.4, 13.4] },   // ya con la pantalla o el travelling asentados
+    { id: 'barber',  at: 13.6, dur: 1.4, play: [15.2, 17.4] },
+    { id: 'vitrina', at: 17.6, dur: 1.4, play: [19.2, 21.4] },
+    { id: 'zavitar', at: 21.6, dur: 1.4, play: [23.2, 25.4] },
   ],
-  exit: [32.4, 33.4],   // Zavitar vuelve a la pantalla del portátil y reaparece la escena
-  exitFrames: [32.4, 36.4], // cuadros INSIDE → último: la cámara sale, se queda de frente y baja hasta fundirse con la página
-  end: 36.4,
+  exit: [25.6, 26.6],   // Zavitar vuelve a la pantalla del portátil y reaparece la escena
+  exitFrames: [25.6, 29.6], // cuadros INSIDE → último: la cámara sale, se queda de frente y baja hasta fundirse con la página
+  end: 29.6,
 };
