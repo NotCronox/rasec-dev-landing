@@ -3,13 +3,13 @@
   Un solo ScrollTrigger con scrub ata una línea de tiempo de GSAP al scroll de la sección .film:
     1. Cuadros de Blender en un lienzo: aparición, grabado de la tapa, giro y entrada en la pantalla.
     2. La captura real de Brasa Marina toma el lugar del vidrio (mismas esquinas, perspectiva exacta)
-       y crece hasta llenar la pantalla: entramos en la web. Sube un teléfono con alguien haciendo un pedido.
-    3. Barber (franjas de poste de barbería), Vitrina (puerta de vidrio) y Zavitar (rueda de formatos),
-       cada uno con su grabación real en el teléfono o en la pantalla.
+       y crece hasta la caja del video: entramos en la web y empieza su video de venta.
+    3. Barber, Vitrina y Zavitar llegan con un travelling de cámara en 3D. Cada uno trae su video (Remotion y HyperFrames,
+       en video-landing), que avanza y retrocede con el scroll. En teléfonos, la grabación real del teléfono.
     4. Zavitar vuelve a la pantalla del portátil, la cámara sale, baja y la escena se apaga en el negro
        donde empieza el índice de proyectos.
-  Todo lo que mueve el scroll avanza y retrocede con él. Los videos de los teléfonos corren solos mientras
-  su panel está en escena (y se piden solo cuando se acercan). Con movimiento reducido queda una imagen fija.
+  Todo avanza y retrocede con el scroll, también los videos (se piden solo cuando se acercan).
+  Con movimiento reducido queda una imagen fija.
 */
 import { SEQUENCES, UNIT, INSIDE, T } from './config.js';
 import { FrameSequence, FrameCanvas } from './frames.js';
@@ -37,12 +37,14 @@ function start() {
   });
 }
 
-// Pide un video de los flujos: AV1 (liviano) y H.264 de respaldo
+// Pide un video de los proyectos (H.264 con un cuadro clave cada 8). Se baja entero y se reproduce desde memoria:
+// así se puede llevar a cualquier segundo al instante, aunque el servidor no acepte pedidos por rangos.
 function loadVideo(v) {
-  const base = v.dataset.src;
-  v.innerHTML = `<source src="${base}.mp4" type='video/mp4; codecs="av01.0.08M.08"'><source src="${base}.h264.mp4" type="video/mp4">`;
-  v.preload = 'auto';
-  v.load();
+  const url = `${v.dataset.src}.mp4`;
+  fetch(url).then(r => (r.ok ? r.blob() : Promise.reject(r.status)))
+    .then(b => { v.src = URL.createObjectURL(b); })
+    .catch(() => { v.src = url; }) // sin fetch: directo
+    .finally(() => { v.preload = 'auto'; v.load(); });
 }
 
 function build(mode) {
@@ -54,11 +56,11 @@ function build(mode) {
   const line = film.querySelector('.film-line');
   const hint = film.querySelector('.film-hint');
   const screenEl = film.querySelector('.film-screen');
-  const ring = film.querySelector('.film-ring');
   const panels = [...film.querySelectorAll('.film-panel')];
   const panel = id => panels.find(p => p.dataset.persona === id);
   const zav = panel('zavitar');
   const out = zav.querySelector('.fp-out');
+  const boxes = panels.map(p => p.querySelector('.fp-out')).filter(b => b && b !== out);
 
   root.classList.add('film-on');
   film.style.setProperty('--film-len', `${T.end * UNIT[mode]}svh`);
@@ -92,9 +94,21 @@ function build(mode) {
     const q = screenQuad(S.frame);
     if (!q) return;
     const onStage = q.map(([x, y]) => [rect.x + x * rect.w, rect.y + y * rect.h]);
-    const target = coverQuad(1440, 900, view.w, view.h);
+    const target = tall ? coverQuad(1440, 900, view.w, view.h) : fitQuad();
     screenEl.style.transform = quadMatrix(1440, 900, S.enter > 0 ? mixQuad(onStage, target, S.enter) : onStage);
     out.style.transform = quadMatrix(1440, 900, S.out < 1 ? mixQuad(onStage, target, S.out) : target);
+    const still = quadMatrix(1440, 900, target);
+    boxes.forEach(b => { b.style.transform = still; });
+  }
+
+  // En pantallas anchas los videos caben enteros (16:10) en el espacio bajo el menú: nada queda cortado ni tapado
+  function fitQuad() {
+    const nav = parseFloat(getComputedStyle(root).getPropertyValue('--nav-h')) || 64;
+    const pad = Math.max(12, view.w * 0.012), top = nav + pad;
+    const aw = view.w - pad * 2, ah = view.h - top - pad;
+    const s = Math.min(aw / 1440, ah / 900), w = 1440 * s, h = 900 * s;
+    const x = (view.w - w) / 2, y = top + (ah - h) / 2;
+    return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
   }
   seq.onload = () => render();
   seq.want(0);
@@ -105,7 +119,7 @@ function build(mode) {
   const exitAt = k => T.exitFrames[0] + (k - INSIDE) / (last - INSIDE) * span(T.exitFrames);
 
   // 1. Cuadros de la entrada
-  tl.to(S, { frame: INSIDE, duration: span(T.frames), onUpdate: render }, T.frames[0]);
+  tl.to(S, { frame: INSIDE - 2, duration: span(T.frames), onUpdate: render }, T.frames[0]); // en INSIDE la pantalla renderizada ya pasa a Zavitar
   tl.to(copy, { autoAlpha: 0, y: -60, duration: span(T.copyOut) }, T.copyOut[0]);
   tl.to(hint, { autoAlpha: 0, duration: 0.3 }, 0);
   tl.fromTo(line, { autoAlpha: 0, y: 24, filter: 'blur(8px)' }, { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.5, ease: 'power2.out' }, T.line[0]);
@@ -115,88 +129,56 @@ function build(mode) {
   tl.fromTo(screenEl, { opacity: 0 }, { opacity: 1, duration: span(T.screenIn) }, T.screenIn[0]);
   tl.to(S, { enter: 1, duration: span(T.enter), ease: 'power2.inOut', onUpdate: render }, T.enter[0]);
   tl.to(canvas, { opacity: 0, duration: 0.6 }, T.enter[0] + 0.4);
-  tl.fromTo(screenEl, { borderRadius: 6 }, { borderRadius: 0, duration: span(T.enter) }, T.enter[0]);
+  tl.fromTo(screenEl, { borderRadius: 6 }, { borderRadius: tall ? 0 : 14, duration: span(T.enter) }, T.enter[0]);
+  const brasaVideo = panel('brasa').querySelector(tall ? '.fp-tall' : '.fp-out');
+  tl.fromTo(brasaVideo, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power1.inOut' }, T.enter[1]);
 
-  // 3. Proyectos
-  const ringSize = () => Math.min(view.h * 0.7, view.w * (tall ? 0.86 : 0.6));
-  const hole = () => ringSize() * 0.19;               // el centro de la rueda (radio 40 de 200 en el SVG)
-  const full = () => Math.hypot(view.w, view.h) / 2 + 8; // un círculo que cubre todo el escenario
-  const circle = r => () => `circle(${r()}px at 50% 50%)`;
+  // 3. Proyectos. Cada uno ocupa un tramo largo del scroll: su video avanza y retrocede con él.
+  // Entre uno y otro, un travelling de cámara en 3D: la pantalla actual se va al fondo girando, desenfocada,
+  // mientras la siguiente llega desde el otro lado y un barrido de luz cruza su vidrio.
+  const glow = film.querySelector('.film-glow');
+  tl.fromTo(glow, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, T.enter[0] + 0.4);
+  tl.set(screenEl, { autoAlpha: 0 }, T.enter[1] + 0.4); // la caja de Brasa ya cubre la captura
 
-  const REVEAL = {
-    // Franjas diagonales que se ensanchan mientras se deslizan, con un filo dorado: el poste de la barbería
-    pole(el, p) {
-      tl.fromTo(el, { '--bar': '0vmax', '--pole': '0vmax' },
-        { '--bar': '14.4vmax', '--pole': '-22vmax', duration: p.dur, ease: 'power2.inOut' }, p.at);
-      tl.fromTo(el, { '--edge': 0 }, { '--edge': 1, duration: p.dur * 0.3, ease: 'power1.out' }, p.at);
-      tl.to(el, { '--edge': 0, duration: p.dur * 0.3, ease: 'power1.in' }, p.at + p.dur * 0.7);
-    },
-    // Una puerta de vidrio que gira sobre su bisagra hasta cerrarse frente a ti; un reflejo cruza el vidrio
-    door(el, p) {
-      tl.fromTo(el, { rotationY: -86, transformOrigin: '0% 50%', transformPerspective: 1700, filter: 'brightness(1.5)' },
-        { rotationY: 0, filter: 'brightness(1)', duration: p.dur, ease: 'power3.inOut' }, p.at);
-      const gloss = el.querySelector('.fp-gloss');
-      tl.fromTo(gloss, { autoAlpha: 1, xPercent: -110 }, { xPercent: 110, duration: p.dur * 0.9, ease: 'power2.inOut' }, p.at + p.dur * 0.35);
-      tl.set(gloss, { autoAlpha: 0 }, p.at + p.dur * 1.25);
-    },
-    // La web anterior cae al centro de la rueda de formatos, la rueda elige JPG y Zavitar se abre desde ahí
-    wheel(el, p, prev) {
-      const a = p.at;
-      tl.fromTo(prev, { clipPath: circle(full) }, { clipPath: circle(hole), duration: 0.7, ease: 'power3.inOut' }, a);
-      tl.fromTo(ring, { autoAlpha: 0, scale: 1.6, rotation: -75 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: 0.75, ease: 'power3.out' }, a + 0.1);
-      tl.fromTo(ring.querySelector('.on'), { '--on': 0 }, { '--on': 1, duration: 0.15 }, a + 0.78);
-      tl.set(el, { autoAlpha: 1 }, a + 0.9);
-      tl.fromTo(el, { clipPath: circle(hole) }, { clipPath: circle(full), duration: 0.7, ease: 'power3.inOut' }, a + 0.9);
-      tl.to(ring, { scale: 2.8, autoAlpha: 0, duration: 0.6, ease: 'power2.in' }, a + 0.95);
-    },
+  const travel = (prev, el, p) => {
+    const d = p.dur, depth = () => -view.w * 0.42;
+    tl.fromTo(prev, { xPercent: 0, rotationY: 0, z: 0, filter: 'blur(0px) brightness(1)', transformPerspective: 1400 },
+      { xPercent: -58, rotationY: 46, z: depth, filter: 'blur(10px) brightness(.35)', duration: d, ease: 'power3.inOut' }, p.at);
+    tl.set(el, { autoAlpha: 1 }, p.at);
+    tl.fromTo(el, { xPercent: 62, rotationY: -46, z: depth, filter: 'blur(10px) brightness(.35)', transformPerspective: 1400 },
+      { xPercent: 0, rotationY: 0, z: 0, filter: 'blur(0px) brightness(1)', duration: d, ease: 'power3.inOut' }, p.at + d * 0.08);
+    tl.set(prev, { autoAlpha: 0 }, p.at + d);
+    const gloss = el.querySelector('.fp-gloss');
+    tl.fromTo(gloss, { autoAlpha: 1, xPercent: -120 }, { xPercent: 120, duration: d * 0.8, ease: 'power2.inOut' }, p.at + d * 0.45);
+    tl.set(gloss, { autoAlpha: 0 }, p.at + d * 1.3);
   };
 
   T.panels.forEach((p, n) => {
     const el = panel(p.id);
     const cap = el.querySelector('.fp-cap');
-    const phone = el.querySelector('.fp-phone');
-    const prev = n === 0 ? null : n === 1 ? screenEl : panel(T.panels[n - 1].id);
-    if (p.reveal !== 'wheel') tl.set(el, { autoAlpha: 1 }, p.at);
-    REVEAL[p.reveal]?.(el, p, prev);
-    if (prev) {
-      // el anterior se aparta (en Zavitar no: se queda nítido dentro de la rueda)
-      // fromTo desde su brillo actual: desde «none» GSAP interpolaría desde brillo 0 (un apagón)
-      if (p.reveal !== 'wheel') {
-        tl.fromTo(prev, { filter: 'brightness(1)', scale: 1 },
-          { filter: 'brightness(.4)', scale: 0.94, duration: p.dur, ease: 'power2.inOut' }, p.at);
-      }
-      tl.set(prev, { autoAlpha: 0 }, p.at + p.dur);
-      if (n === 1) tl.set(panel(T.panels[0].id), { autoAlpha: 0 }, p.at + p.dur);
-    }
-    if (phone) {
-      // la web de escritorio queda atrás, un poco más oscura, y sube el teléfono con la grabación
-      // (el oscurecido va en la imagen: el contenedor se oscurece aparte cuando entra el proyecto siguiente)
-      const back = n === 0 ? screenEl.querySelector('img') : el.querySelector('.fp-img');
-      const at = p.at + p.dur * T.phoneIn;
-      tl.fromTo(phone, { autoAlpha: 0, y: () => view.h * 0.18, rotation: tall ? 0 : 4 },
-        { autoAlpha: 1, y: 0, rotation: 0, duration: 0.8, ease: 'power3.out' }, at);
-      if (back) tl.fromTo(back, { '--dim': 1 }, { '--dim': tall ? 0.42 : 0.66, duration: 0.8, ease: 'power2.out' }, at);
-    }
-    const capAt = p.reveal === 'wheel' ? p.at + 1.2 : p.at + p.dur * 0.6;
-    tl.fromTo(cap, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, capAt);
-    const next = T.panels[n + 1];
-    tl.to(cap, { autoAlpha: 0, y: -20, duration: 0.35, ease: 'power2.in' }, next ? next.at - 0.1 : T.exit[0] - 0.2);
+    if (n === 0) tl.set(el, { autoAlpha: 1 }, p.at);
+    else travel(panel(T.panels[n - 1].id), el, p);
+    tl.fromTo(cap, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, p.play[0]);
+    tl.to(cap, { autoAlpha: 0, y: -20, duration: 0.35, ease: 'power2.in' }, p.play[1] - 0.2);
   });
 
-  // 4. Salida: Zavitar vuelve al vidrio, reaparece la escena y la cámara sale, baja y se apaga
+  // 4. Salida: Zavitar vuelve al vidrio, reaparece la escena y la cámara sale, baja y se funde con el fondo de la página
   if (tall) tl.to(zav.querySelector('.fp-tall'), { autoAlpha: 0, duration: 0.45, ease: 'power1.inOut' }, T.exit[0]);
   tl.to(S, { out: 0, duration: span(T.exit), ease: 'power2.inOut', onUpdate: render }, T.exit[0]);
-  tl.fromTo(out, { borderRadius: 0 }, { borderRadius: 6, duration: span(T.exit) }, T.exit[0]);
+  tl.fromTo(out, { borderRadius: 14 }, { borderRadius: 6, duration: span(T.exit) }, T.exit[0]);
   tl.to(canvas, { opacity: 1, duration: 0.5 }, T.exit[0] + 0.2);
+  tl.to(glow, { autoAlpha: 0, duration: 0.6 }, T.exit[0] + 0.2);
   tl.to(S, { frame: last, duration: span(T.exitFrames), onUpdate: render }, T.exitFrames[0]);
   tl.to(out, { opacity: 0, duration: exitAt(592) - exitAt(536), ease: 'power1.in' }, exitAt(536)); // con la pantalla renderizada
+  // sin franja: la escena ya está a oscuras y el lienzo se desvanece hacia el fondo vivo de la página
+  tl.to(canvas, { opacity: 0, duration: T.end - exitAt(560), ease: 'power1.in' }, exitAt(560));
   tl.set({}, {}, T.end);
 
   // Personalidad (colores del fondo y de los acentos) según lo que está en escena
   const dark = exitAt(540);
   const personaAt = t => {
     let id = null;
-    for (const p of T.panels) if (t >= p.at + p.dur * 0.4) id = p.id;
+    for (const p of T.panels) if (t >= p.at + p.dur * 0.5) id = p.id;
     return t >= dark ? null : id;
   };
   let persona;
@@ -205,28 +187,34 @@ function build(mode) {
     if (id !== persona) { persona = id; window.Rasec?.film?.(id); }
   };
 
-  // Videos: se piden 3 unidades antes de su panel y corren mientras el panel está en escena
+  // Videos: se piden 4 unidades antes de su tramo; el scroll decide en qué segundo está cada uno
   const media = [...film.querySelectorAll('.fp-video')]
     .filter(v => !v.dataset.mode || v.dataset.mode === mode)
     .map(v => {
-      const i = T.panels.findIndex(p => p.id === v.closest('.film-panel').dataset.persona);
-      const p = T.panels[i], next = T.panels[i + 1];
-      const from = p.reveal === 'wheel' ? p.at + 0.9 : p.at;
-      const to = next ? next.at + next.dur : v.dataset.mode === 'tall' ? T.exit[0] + 0.5 : exitAt(592);
-      return { v, from, to, asked: false, fresh: true };
+      const p = T.panels.find(q => q.id === v.closest('.film-panel').dataset.persona);
+      const [a, b] = p.play;
+      const m = { v, a, b, asked: false, want: 0, busy: false };
+      v.addEventListener('seeked', () => { m.busy = false; seek(m); });
+      v.addEventListener('loadedmetadata', () => seek(m));
+      return m;
     });
+  // Un salto a la vez: el siguiente se pide cuando el navegador termina de mostrar el anterior
+  function seek(m) {
+    const v = m.v;
+    if (m.busy || v.readyState < 1 || !v.duration) return;
+    const time = Math.min(v.duration - 0.05, m.want * v.duration);
+    if (Math.abs(v.currentTime - time) < 0.02) return;
+    m.busy = true;
+    v.currentTime = time;
+  }
   const syncMedia = () => {
     const t = tl.time();
     for (const m of media) {
-      if (!m.asked && t > m.from - 3) { m.asked = true; loadVideo(m.v); }
-      const on = t >= m.from && t <= m.to;
-      if (on && m.v.paused) {
-        if (m.fresh) { m.fresh = false; m.v.currentTime = 0; }
-        m.v.play().catch(() => {});
-      } else if (!on && !m.v.paused) m.v.pause();
+      if (!m.asked && t > m.a - 4) { m.asked = true; loadVideo(m.v); }
+      const k = Math.max(0, Math.min(1, (t - m.a) / (m.b - m.a)));
+      if (k !== m.want) { m.want = k; seek(m); }
     }
   };
-  const pauseAll = () => media.forEach(m => m.v.pause());
 
   tl.eventCallback('onUpdate', () => { syncPersona(); syncMedia(); }); // con el scrub, la línea de tiempo llega después que el scroll
 
@@ -243,8 +231,7 @@ function build(mode) {
       if (self.progress > 0.002) seq.release();
       if (self.progress > 0.2 && !warm) { warm = true; panelImgs.forEach(im => { im.loading = 'eager'; }); } // las capturas, antes de que hagan falta
     },
-    onLeave: () => { window.Rasec?.film?.(null); pauseAll(); },
-    onLeaveBack: pauseAll,
+    onLeave: () => window.Rasec?.film?.(null),
     onEnterBack: () => { syncPersona(); syncMedia(); },
     onRefresh: () => { view.resize(); render(); },
   });
@@ -256,11 +243,12 @@ function build(mode) {
 
   render();
   return () => { // limpieza al cambiar de modo (giro del teléfono, movimiento reducido)
-    st.kill(); tl.kill(); seq.onload = null; pauseAll();
+    st.kill(); tl.kill(); seq.onload = null;
     root.classList.remove('film-on');
-    gsap.set([copy, line, hint, screenEl, canvas, ring, out, ...panels,
-      ...film.querySelectorAll('.fp-cap, .fp-phone, .fp-img, .fp-gloss, .fp-tall, .film-screen img, .film-ring .on')], { clearProps: 'all' });
+    gsap.set([copy, line, hint, screenEl, canvas, out, film.querySelector('.film-glow'), ...panels,
+      ...film.querySelectorAll('.fp-cap, .fp-out, .fp-gloss, .fp-tall')], { clearProps: 'all' });
     screenEl.style.transform = out.style.transform = '';
+    boxes.forEach(b => { b.style.transform = ''; });
     window.Rasec?.film?.(null);
   };
 }

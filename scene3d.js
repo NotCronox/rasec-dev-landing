@@ -1,6 +1,6 @@
 /*
   Rasec Dev · fondo vivo (three.js r160, un solo canvas fijo detrás de la página)
-  - Un shader dibuja la niebla del color del proyecto activo, una rejilla de puntos, el resplandor detrás
+  - Un shader dibuja la niebla del color del proyecto activo, polvo flotante, el resplandor detrás
     del objeto en pantalla (el portátil del inicio o el cristal del proyecto) y un banco de niebla al pasar
     de un proyecto a otro. El portátil y los cristales son videos prerrenderizados (film.js y landing.js).
   - La personalidad (window.Rasec.persona) cambia el mundo de color.
@@ -81,15 +81,22 @@ function start() {
         col += uGlow * uGlowAmt * (exp(-d * d * 5.) * .5 + exp(-d * 2.4) * .08) * (.6 + .8 * f);
         // Viñeta
         col *= mix(1., smoothstep(1.4, .1, length(p * vec2(.82, 1.))), .85);
-        // Rejilla de puntos: se mueve más lento que la página (profundidad)
-        float cell = 36. * uDpr;
-        vec2 g = vec2(fc.x, fc.y + uScroll * uDpr * .35);
-        vec2 gc = mod(g, cell) - cell * .5;
-        float dt = smoothstep(1.3 * uDpr, .25 * uDpr, length(gc));
-        float tw = .55 + .45 * sin(uTime * .7 + h21(floor(g / cell)) * 6.283);
-        col += uDots * dt * .085 * tw * (.3 + f) * smoothstep(1.25, .15, length(p));
-        // Grano de película
-        col += (h21(fc + fract(uTime * 7.) * 91.) - .5) * .016;
+        // Polvo flotante en dos capas: motas sueltas de distinto tamaño que derivan despacio; la lejana se mueve menos con el scroll
+        float dust = 0.;
+        for (int L = 0; L < 2; L++) {
+          float fl = float(L), cell = (58. + fl * 54.) * uDpr;
+          vec2 g = vec2(fc.x, fc.y + uScroll * uDpr * (.22 + fl * .2));
+          vec2 id = floor(g / cell);
+          float r = h21(id + fl * 13.7);
+          vec2 off = (vec2(h21(id + 7.1), h21(id + 3.7)) - .5) * cell * .7;
+          off += vec2(sin(uTime * .21 + r * 6.283), cos(uTime * .17 + r * 4.1)) * cell * .09;
+          float sz = mix(.5, 1.6 + fl * .9, h21(id + 1.3)) * uDpr;
+          float m = smoothstep(sz, sz * .15, length(mod(g, cell) - cell * .5 - off)) * step(.58, r);
+          dust += m * (.55 + .45 * sin(uTime * (.5 + r) + r * 6.283)) * (.7 - fl * .3);
+        }
+        col += uDots * dust * .1 * (.35 + f) * smoothstep(1.3, .1, length(p));
+        // Grano de película, muy suave
+        col += (h21(fc + fract(uTime * 7.) * 91.) - .5) * .009;
         gl_FragColor = vec4(max(col, 0.), 1.);
         #include <colorspace_fragment>
       }`,

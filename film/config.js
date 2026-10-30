@@ -24,14 +24,13 @@ export const T = {
   line: [6.4, 8.6],     // una línea mientras el portátil gira hacia nosotros
   screenIn: [9.2, 9.5], // la captura real de Brasa toma el lugar de la pantalla renderizada (es la misma imagen)
   enter: [10, 11],      // la pantalla crece hasta llenar el viewport: estamos dentro de Brasa Marina
-  panels: [             // cada proyecto: cuándo entra, cuánto dura su entrada y con qué gesto
-    { id: 'brasa',   at: 10.5, dur: 0.6, reveal: 'screen' },
-    { id: 'barber',  at: 13.2, dur: 1.1, reveal: 'pole' },  // franjas diagonales que se abren, como el poste de una barbería
-    { id: 'vitrina', at: 15.9, dur: 1.1, reveal: 'door' },  // una puerta de vidrio que se cierra frente a ti
-    { id: 'zavitar', at: 18.6, dur: 1.6, reveal: 'wheel' }, // Vitrina cae al centro de la rueda de formatos y se abre Zavitar
+  panels: [             // cada proyecto: cuándo llega (at, dur del travelling) y el tramo en que su video avanza con el scroll
+    { id: 'brasa',   at: 10.5, dur: 0.6, play: [11.0, 15.2] },
+    { id: 'barber',  at: 15.4, dur: 1.4, play: [16.6, 21.0] },
+    { id: 'vitrina', at: 21.2, dur: 1.4, play: [22.4, 26.8] },
+    { id: 'zavitar', at: 27.0, dur: 1.4, play: [28.2, 32.2] },
   ],
-  phoneIn: 0.55,        // el teléfono sube cuando su panel ya entró (fracción de la entrada)
-  exit: [21.4, 22.4],   // Zavitar vuelve a la pantalla del portátil y reaparece la escena
-  exitFrames: [21.4, 25.4], // cuadros INSIDE → último: la cámara sale, se queda de frente y baja hasta el negro
-  end: 25.4,
+  exit: [32.4, 33.4],   // Zavitar vuelve a la pantalla del portátil y reaparece la escena
+  exitFrames: [32.4, 36.4], // cuadros INSIDE → último: la cámara sale, se queda de frente y baja hasta fundirse con la página
+  end: 36.4,
 };
